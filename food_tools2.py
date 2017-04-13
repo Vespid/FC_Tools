@@ -125,7 +125,7 @@ def get_todays_data():
     current_odds=[x+6 for x in names]
     
     Pirates=[test[x].text for x in names]
-    Percent=[int(test[x].text[:-2]) for x in opening_odds]
+    Percent=[realodds[int(test[x].text[:-2])] for x in opening_odds]
     Payout=[int(test[x].text[:-2]) for x in current_odds]
     
     Shipwreck=Pirates[0:4]
@@ -134,12 +134,21 @@ def get_todays_data():
     Hidden_Cove=Pirates[12:16]
     Harpoon_Harry=Pirates[16:20]
     
+    roundData=[Shipwreck,Lagoon,Treasure_Island,Hidden_Cove,Harpoon_Harry]
+    
     OddsData={}; PayoutData={}
     for x in range(len(Pirates)):
         OddsData[Pirates[x]]=Percent[x]
         PayoutData[Pirates[x]]=Payout[x]
     
-    return [Shipwreck,Lagoon,Treasure_Island,Hidden_Cove,Harpoon_Harry], OddsData, PayoutData
+    for tavern in roundData:
+        OddsSum=0
+        for pirate in tavern:
+            OddsSum+=OddsData[pirate]
+        for pirate in tavern:
+            OddsData[pirate]=OddsData[pirate]/OddsSum
+    
+    return roundData, OddsData, PayoutData
 
 def calc_combos(Arenas, Odds, Payouts):
     Odds['']=1; Payouts['']=1;
