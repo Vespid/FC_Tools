@@ -21,9 +21,9 @@ realodds={2:0.523,
 def get_past_data(rnd):
     win_file=open("fcwin_data.pickle","rb")
     win_data = pickle.load(win_file)
-    if rnd in list(win_data.keys()):
-        win_file.close()
-        return
+#    if rnd in list(win_data.keys()):
+#        win_file.close()
+#        return
     win_file.close()
     res=requests.get("http://foodclub.daqtools.info/History.php?round=%d" % rnd)
     res.raise_for_status()
