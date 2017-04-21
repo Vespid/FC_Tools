@@ -1,13 +1,36 @@
-import food_tools as ft
+import food_tools2 as ft
+import warnings
+warnings.filterwarnings('ignore')
 
-rnd="6549"
-risk=0.955
+rnd=4180
+risk=0.95
+max_bet=9960
 
-ft.get_past_data(int(rnd))
-AllTaverns=ft.get_soup_data()
-todaysbets,TER=ft.calc_bet(risk)
-localdf=ft.calc_cumulative(todaysbets)
-ft.calc_bust(localdf,todaysbets,rnd,risk)
-print("TER: %.2f" %TER)
-ft.start()
-ft.daqtools(todaysbets)
+
+
+#####Calculate Today's Round#####
+#a,o,p=ft.get_todays_data()
+a,o,p=ft.get_api_data()
+combodf=ft.calc_combos(a,o,p)
+bets=ft.calc_bets(combodf, max_bet, risk)
+ft.calc_bust(ft.calc_cumulative(bets, ft.calc_oddsdf(bets, o)),bets,rnd,risk)
+
+#ft.start()
+#ft.daqtools(bets,max_bet)
+
+
+#import time
+#t1=time.time()
+######Calculate Past Round#####
+#ft.get_past_data(rnd)
+#a,o,p,w=ft.load_past_data(rnd)
+#combodf=ft.calc_combos(a,o,p)
+##
+#bets=ft.calc_bets(combodf, max_bet, risk)
+##
+#print(ft.calc_winnings(bets,w))
+##
+##
+#clfbets=ft.clf_bet(combodf, max_bet, risk)
+#print(ft.calc_winnings(clfbets,w))
+#ft.calc_bust(ft.calc_cumulative(clfbets, ft.calc_oddsdf(clfbets, o)),clfbets,rnd,risk)
