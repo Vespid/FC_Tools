@@ -1,4 +1,4 @@
-import food_tools2
+import food_tools as ft
 import pickle
 import random
 import warnings
@@ -11,17 +11,21 @@ datarange=list(FC_data.keys())
 data_file.close()
 #--------------USER INPUTS--------------
 risks=[.95]
-max_bet=10000
+max_bet=1000
 
 Random=False
 test_amount=1
 days=30
 
-r_start=6265
-r_end=6295
+r_start=6000
+r_end=6538
 
-start=[5251,5501,5751,6001,6250]
-end=[5500,5750,6000,6250,6547]
+start=[6265,6296,6327,6357,6388,6418,6449,6480,6508]
+end=[6295,6326,6356,6387,6417,6448,6479,6507,6538]
+
+start=[3574,4001,4251,4501,4751,5001,5251,5501,5751,6001,6251]
+end=[4000,4250,4500,4750,5000,5250,5500,5750,6000,6250,6538]
+
 
 
 for x in range(len(start)):
@@ -41,8 +45,11 @@ for x in range(len(start)):
             rounds=[y for y in x if y in datarange]
 #        print("Test: %d" %(tests+1))
         print(" ")
-        food_tools2.test_model(risks,rounds,max_bet)
-        food_tools2.test_clf_model(risks,rounds,max_bet)
+        ft.test_model(risks,rounds,max_bet)
+#        ft.test_dumb_model(risks,rounds,max_bet)
+#        ft.test_daq_model(risks,rounds,max_bet)
+#        ft.test_vdaq_model(risks,rounds,max_bet)
+#        ft.test_clf_model(risks,rounds,max_bet)
 print("Done")
 
-#food_tools2.get_past_data(6551)
+#ft.get_past_data(6551)
