@@ -1,6 +1,8 @@
 import food_tools as ft
 import warnings
 import math, time
+import pickle
+
 warnings.filterwarnings('ignore')
 
 rnd=math.floor((time.time()-926028865)/60/60/24)
@@ -40,3 +42,11 @@ ft.reddit_format(rnd,bets)
 #a,o,p,w=ft.calc_odds(rnd)
 #combodf=ft.calc_combos(a,o,p)
 #bets=ft.calc_bets(combodf, max_bet, risk)
+
+redditbet_file=open("MyRedditBets.pickle","rb")
+reddit_bets = pickle.load(redditbet_file)
+redditbet_file.close()
+reddit_bets[rnd]=bets
+redditbet_file=open("MyRedditBets.pickle","wb")
+pickle.dump(reddit_bets, redditbet_file)
+redditbet_file.close()
