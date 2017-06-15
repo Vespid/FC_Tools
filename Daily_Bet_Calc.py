@@ -12,7 +12,7 @@ max_bet=9970
 #####Calculate Today's Round#####
 a,o,p=ft.get_todays_data()
 combodf=ft.calc_combos(a,o,p)
-bets=ft.calc_bets(combodf, max_bet, risk)
+bets,TER=ft.calc_bets(combodf, max_bet, risk)
 ft.calc_bust(ft.calc_cumulative(bets, ft.calc_oddsdf(bets, o)),bets,rnd,risk)
 
 ft.start()

@@ -1,4 +1,4 @@
-import pickle, bs4, requests, time, json
+import pickle, bs4, requests, time
 import pandas as pd
 import numpy as np
 from selenium import webdriver
@@ -6,17 +6,17 @@ import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 
 #favors 11:1
-#realodds={2:0.523,
-#        3:0.284,
-#        4:0.229,
-#        5:0.183,
-#        6:0.159,
-#        7:0.133,
-#        8:0.120,
-#        9:0.104,
-#        10:0.100,
-#        11:0.102,
-#        12:0.086,
+#realodds={2:0.5226,
+#        3:0.2842,
+#        4:0.2288,
+#        5:0.1833,
+#        6:0.1583,
+#        7:0.1332,
+#        8:0.1191,
+#        9:0.1047,
+#        10:0.0989,
+#        11:0.1023,
+#        12:0.0862,
 #        13:0.044,
 #        }
 
@@ -197,7 +197,7 @@ def calc_bets(combos, max_bet, risk):
     combos.index=range(1,len(combos)+1)
     bets=combos.head(10)
     TER=bets["Expected Ratio"].sum()         
-    return bets
+    return bets, TER
 
 def calc_oddsdf(bets, Odds):
     bet_list=[bets[n].tolist() for n in list(bets)[0:5]]
@@ -312,24 +312,25 @@ def calc_bust(localdf,bets,rnd,risk):
 def calc_winnings(bets,winners):    
     winnings=[]
     result=winners
-    for y in range(1,len(bets)+1):
-        bet = list(filter(None, list(bets.ix[y,0:5])))
+    for y in range(0,len(bets)):
+        bet = list(filter(None, list(bets.iloc[y,0:5])))
         if set(bet).issubset(set(result)):
-            winnings.append(bets.ix[y,5])
+            winnings.append(bets.iloc[y,5])
     pay=sum(winnings)
     return pay
 
 def test_model(risks,rounds,max_bet):
     for risk in risks:
-        total_win=[]; bets=0;
+        total_win=[]; bets=0; total_TER=[]
         for rnd in rounds:
             Arenas, Odds, Payouts, win_data=load_past_data(rnd)
             combos=calc_combos(Arenas, Odds, Payouts)
-            bet_today=calc_bets(combos, max_bet, risk)
+            bet_today,TER=calc_bets(combos, max_bet, risk)
             win=calc_winnings(bet_today,win_data)
             total_win.append(win)
+            total_TER.append(TER)
             bets+=10
-        print("%.2f %d %.2f" % (risk,sum(total_win),sum(total_win)/bets))
+        print("%.2f %d %.2f - TER: %.2f" % (risk,sum(total_win),sum(total_win)/bets, sum(total_TER)/len(rounds)))
          
 def start():
     global browser
@@ -349,7 +350,7 @@ def daqtools(bets,max_bet):
             betindex="bet[%d][%d]" % (number+1, tavern+1)
             pirate=bnames.iat[number,tavern]
             if pirate!='':
-                browser.find_element_by_xpath("//select[@name='"+betindex+"']/option[text()='%s']" % pirate).click()
+                browser.find_element_by_xpath('//select[@name="%s"]/option[text()="%s"]' % (betindex, pirate)).click()
             else:
                 pass
 
@@ -523,7 +524,7 @@ def test_dumb_model(risks,rounds,max_bet):
         for rnd in rounds:
             Arenas, Odds, Payouts, win_data=calc_odds(rnd)
             combos=calc_combos(Arenas, Odds, Payouts)
-            bet_today=calc_bets(combos, max_bet, risk)
+            bet_today,TER=calc_bets(combos, max_bet, risk)
             win=calc_winnings(bet_today,win_data)
             total_win.append(win)
             bets+=10
@@ -554,7 +555,8 @@ def daq_bets(rnd, max_bet, risk):
     combos.sort_values("Raw",ascending=False,inplace=True)
     combos.index=range(1,len(combos)+1)
     bets=combos.head(10)       
-    return bets
+    TER=bets["Expected Ratio"].sum()   
+    return bets,TER
 
 def vdaq_bets(rnd, max_bet, risk):
     Arenas,o,Payouts,oo,r,fa,w,f,alg,Odds=load_all_data(rnd)
@@ -580,23 +582,25 @@ def vdaq_bets(rnd, max_bet, risk):
     combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
     combos.sort_values("Raw",ascending=False,inplace=True)
     combos.index=range(1,len(combos)+1)
-    bets=combos.head(10)       
-    return bets
+    bets=combos.head(10)
+    TER=bets["Expected Ratio"].sum()          
+    return bets, TER
 
 
 def test_daq_model(risks,rounds,max_bet):
     for risk in risks:
-        total_win=[]; bets=0;
+        total_win=[]; bets=0; total_TER=[]
         for rnd in rounds:
             win_file=open("fcwin_data.pickle","rb")
             wind = pickle.load(win_file)
             win_file.close()
             win_data=wind[rnd]
-            bet_today=daq_bets(rnd, max_bet, risk)
+            bet_today,TER=daq_bets(rnd, max_bet, risk)
             win=calc_winnings(bet_today,win_data)
             total_win.append(win)
+            total_TER.append(TER)
             bets+=10
-        print("%.2f %d %.2f - DAQ" % (risk,sum(total_win),sum(total_win)/bets))
+        print("%.2f %d %.2f TER: %.2f - DAQ" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
         
 def test_vdaq_model(risks,rounds,max_bet):
     for risk in risks:
@@ -606,11 +610,11 @@ def test_vdaq_model(risks,rounds,max_bet):
             wind = pickle.load(win_file)
             win_file.close()
             win_data=wind[rnd]
-            bet_today=vdaq_bets(rnd, max_bet, risk)
+            bet_today,TER=vdaq_bets(rnd, max_bet, risk)
             win=calc_winnings(bet_today,win_data)
             total_win.append(win)
             bets+=10
-        print("%.2f %d %.2f - DAQ" % (risk,sum(total_win),sum(total_win)/bets))
+        print("%.2f %d %.2f - VDAQ" % (risk,sum(total_win),sum(total_win)/bets))
 
 nicknames={
     "Federismo Corvallio": 'Federismo',
@@ -646,3 +650,142 @@ def reddit_format(rnd,bets):
     for x in olist:
         print(count,*x, sep='|')
         count+=1
+
+def arena_odds_bets(rnd, max_bet, risk):    
+    Arenas,o,Payouts,oo,r,fa,w,f,alg,Odds=load_all_data(rnd)
+    
+    lookup_file=open("ArenaOdds.pickle","rb")
+    lookup = pickle.load(lookup_file)
+    lookup_file.close()
+
+    ArenaOdds=[]
+    for x in Arenas:
+        A_Odds=[]
+        for y in x:
+            A_Odds.append(oo[y])
+        A_Odds.sort()
+        ArenaOdds.append(A_Odds)
+    count=0; AO_key={};
+    for x in Arenas:
+        for y in x:
+            for z in range(4):
+                AO_key[y]=str(ArenaOdds[count])+"-"+str(oo[y])
+        count+=1
+    
+    try:
+        for x in Arenas:
+            for pirate in x:
+                Odds[pirate]=lookup[AO_key[pirate]]*100
+    except KeyError:
+        pass
+    
+    Odds['']=100; Payouts['']=1;
+    for n in range(len(Arenas)):
+        Arenas[n].append('')
+    output=[]
+    for a in Arenas[0]:
+        for b in Arenas[1]:
+            for c in Arenas[2]:
+                for d in Arenas[3]:
+                    for e in Arenas[4]:
+                        o=Odds[a]/100*Odds[b]/100*Odds[c]/100*Odds[d]/100*Odds[e]/100
+                        p=Payouts[a]*Payouts[b]*Payouts[c]*Payouts[d]*Payouts[e]
+                        output.append([a,b,c,d,e,p,o])
+    combos=pd.DataFrame(output)
+    combos.columns=["Shipwreck","Lagoon","Treasure Island","Hidden Cove","Harpoon Harry","Payout","Percent"]
+    limit=1000000/max_bet
+    combos.ix[combos.Payout > limit, 'Payout'] = limit
+    combos["Expected Ratio"]=combos["Percent"]*combos["Payout"]
+    combos["NP"]=(combos["Percent"]-.0102)/.0405
+    combos["NER"]=(combos["Expected Ratio"]-.3017)/.4235
+    combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
+    combos.sort_values("Raw",ascending=False,inplace=True)
+    combos.index=range(1,len(combos)+1)
+    bets=combos.head(10)       
+    TER=bets["Expected Ratio"].sum()   
+    return bets, TER
+
+def test_ao_model(risks,rounds,max_bet):
+    for risk in risks:
+        total_win=[]; bets=0; total_TER=[]
+        for rnd in rounds:
+            win_file=open("fcwin_data.pickle","rb")
+            wind = pickle.load(win_file)
+            win_file.close()
+            win_data=wind[rnd]
+            bet_today,TER=arena_odds_bets(rnd, max_bet, risk)
+            win=calc_winnings(bet_today,win_data)
+            total_win.append(win)
+            total_TER.append(TER)
+            bets+=10
+        print("%.2f %d %.2f TER: %.2f - AO" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
+        
+def value_bets(rnd, max_bet, risk):    
+    Arenas,o,Payouts,oo,r,fa,w,f,alg,Odds=load_all_data(rnd)
+    
+    lookup_file=open("ArenaOdds.pickle","rb")
+    lookup = pickle.load(lookup_file)
+    lookup_file.close()
+
+    ArenaOdds=[]
+    for x in Arenas:
+        A_Odds=[]
+        for y in x:
+            A_Odds.append(oo[y])
+        A_Odds.sort()
+        ArenaOdds.append(A_Odds)
+    count=0; AO_key={};
+    for x in Arenas:
+        for y in x:
+            for z in range(4):
+                AO_key[y]=str(ArenaOdds[count])+"-"+str(oo[y])
+        count+=1
+    
+    try:
+        for x in Arenas:
+            for pirate in x:
+                Odds[pirate]=lookup[AO_key[pirate]]*100
+    except KeyError:
+        pass
+    
+    Odds['']=100; Payouts['']=1;
+    for n in range(len(Arenas)):
+        Arenas[n].append('')
+    output=[]
+    for a in Arenas[0]:
+        for b in Arenas[1]:
+            for c in Arenas[2]:
+                for d in Arenas[3]:
+                    for e in Arenas[4]:
+                        o=Odds[a]/100*Odds[b]/100*Odds[c]/100*Odds[d]/100*Odds[e]/100
+                        p=Payouts[a]*Payouts[b]*Payouts[c]*Payouts[d]*Payouts[e]
+                        output.append([a,b,c,d,e,p,o])
+    combos=pd.DataFrame(output)
+    combos.columns=["Shipwreck","Lagoon","Treasure Island","Hidden Cove","Harpoon Harry","Payout","Percent"]
+    limit=1000000/max_bet
+    combos.ix[combos.Payout > limit, 'Payout'] = limit
+    combos["Expected Ratio"]=combos["Percent"]*combos["Payout"]
+    combos["NP"]=(combos["Percent"]-.0102)/.0405
+    combos["NER"]=(combos["Expected Ratio"]-.3017)/.4235
+    combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
+    combos["Value"]=combos["NP"]+combos["NER"]
+    combos.sort_values("Value",ascending=False,inplace=True)
+    combos.index=range(1,len(combos)+1)
+    bets=combos.head(10)       
+    TER=bets["Expected Ratio"].sum()   
+    return bets, TER
+
+def test_value_model(risks,rounds,max_bet):
+    for risk in risks:
+        total_win=[]; bets=0; total_TER=[]
+        for rnd in rounds:
+            win_file=open("fcwin_data.pickle","rb")
+            wind = pickle.load(win_file)
+            win_file.close()
+            win_data=wind[rnd]
+            bet_today,TER=value_bets(rnd, max_bet, risk)
+            win=calc_winnings(bet_today,win_data)
+            total_win.append(win)
+            total_TER.append(TER)
+            bets+=10
+        print("%.2f %d %.2f TER: %.2f - Value" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
