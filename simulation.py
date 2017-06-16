@@ -11,7 +11,7 @@ datarange=list(FC_data.keys())
 data_file.close()
 #--------------USER INPUTS--------------
 risks=[1]
-max_bet=1000
+max_bet=10000
 
 Random=False
 test_amount=1
@@ -25,9 +25,9 @@ end=[6295,6326,6356,6387,6417,6448,6479,6507,6538]
 
 #start=[3574,4001,4251,4501,4751,5001,5251,5501,5751,6001,6251]
 #end=[4000,4250,4500,4750,5000,5250,5500,5750,6000,6250,6538]
-#
-start=[6508]
-end=[6538]
+
+#start=[3574]
+#end=[4000]
 
 for x in range(len(start)):
     r_start=start[x]
@@ -52,7 +52,8 @@ for x in range(len(start)):
 #        ft.test_vdaq_model(risks,rounds,max_bet)
 #        ft.test_clf_model(risks,rounds,max_bet)
 #        ft.test_ao_model(risks,rounds,max_bet)
-        ft.test_value_model(risks,rounds,max_bet)
+#        ft.test_value_model(risks,rounds,max_bet)
+        ft.test_AORO(risks,rounds,max_bet)
 print("Done")
 
 #ft.get_past_data(6551)

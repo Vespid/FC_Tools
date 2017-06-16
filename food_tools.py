@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 
 #favors 11:1
-#realodds={2:0.5226,
+#AORO_odds={2:0.5226,
 #        3:0.2842,
 #        4:0.2288,
 #        5:0.1833,
@@ -19,6 +19,20 @@ plt.style.use('ggplot')
 #        12:0.0862,
 #        13:0.044,
 #        }
+
+AORO_odds={2:0.5226,
+        3:0.2842,
+        4:0.2288,
+        5:0.1833,
+        6:0.1583,
+        7:0.1332,
+        8:0.1191,
+        9:0.1047,
+        10:0.0989,
+        11:0.087,
+        12:0.08,
+        13:0.044,
+        }
 
 realodds={2:0.523,
         3:0.285,
@@ -549,10 +563,10 @@ def daq_bets(rnd, max_bet, risk):
     limit=1000000/max_bet
     combos.ix[combos.Payout > limit, 'Payout'] = limit
     combos["Expected Ratio"]=combos["Percent"]*combos["Payout"]
-    combos["NP"]=(combos["Percent"]-.0102)/.0405
-    combos["NER"]=(combos["Expected Ratio"]-.3017)/.4235
-    combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
-    combos.sort_values("Raw",ascending=False,inplace=True)
+#    combos["NP"]=(combos["Percent"]-.0102)/.0405
+#    combos["NER"]=(combos["Expected Ratio"]-.3017)/.4235
+#    combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
+    combos.sort_values("Expected Ratio",ascending=False,inplace=True)
     combos.index=range(1,len(combos)+1)
     bets=combos.head(10)       
     TER=bets["Expected Ratio"].sum()   
@@ -696,10 +710,10 @@ def arena_odds_bets(rnd, max_bet, risk):
     limit=1000000/max_bet
     combos.ix[combos.Payout > limit, 'Payout'] = limit
     combos["Expected Ratio"]=combos["Percent"]*combos["Payout"]
-    combos["NP"]=(combos["Percent"]-.0102)/.0405
-    combos["NER"]=(combos["Expected Ratio"]-.3017)/.4235
-    combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
-    combos.sort_values("Raw",ascending=False,inplace=True)
+#    combos["NP"]=(combos["Percent"]-.0102)/.0405
+#    combos["NER"]=(combos["Expected Ratio"]-.3017)/.4235
+#    combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
+    combos.sort_values("Expected Ratio",ascending=False,inplace=True)
     combos.index=range(1,len(combos)+1)
     bets=combos.head(10)       
     TER=bets["Expected Ratio"].sum()   
@@ -789,3 +803,96 @@ def test_value_model(risks,rounds,max_bet):
             total_TER.append(TER)
             bets+=10
         print("%.2f %d %.2f TER: %.2f - Value" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
+        
+def AORO_bets(rnd, max_bet, risk):
+    Arenas,o,Payouts,oo,r,fa,w,f,alg,Odds=load_all_data(rnd)
+    
+    detail=[]; prates=[]
+    for y in range(len(Arenas)):
+        open_odds=[]; summation=0
+        for x in Arenas[y]:
+            open_odds.append(AORO_odds[oo[x]])
+        pp=Arenas[y]
+        zipfile=[A for B, A in sorted(zip(open_odds,pp))]
+        open_odds.sort()
+        for x in range(len(open_odds)):
+            prates.append(zipfile[x])
+            if open_odds[x]!=.5226:
+                summation+=open_odds[x]
+        if open_odds[2]==.5226:
+            open_odds[2]=(1-summation)/2
+            open_odds[3]=open_odds[2]
+        if open_odds[3]==.5226:
+            open_odds[3]=1-summation     
+        for x in range(len(open_odds)):
+            detail.append(open_odds[x])
+    
+    Odds={}
+    for x in range(len(prates)):
+        Odds[prates[x]]=detail[x]
+    
+    lookup_file=open("ArenaOdds.pickle","rb")
+    lookup = pickle.load(lookup_file)
+    lookup_file.close()
+    
+    ArenaOdds=[]
+    for x in Arenas:
+        A_Odds=[]
+        for y in x:
+            A_Odds.append(oo[y])
+        A_Odds.sort()
+        ArenaOdds.append(A_Odds)
+    count=0; AO_key={};
+    for x in Arenas:
+        for y in x:
+            for z in range(4):
+                AO_key[y]=str(ArenaOdds[count])+"-"+str(oo[y])
+        count+=1
+    
+    try:
+        for x in Arenas:
+            for pirate in x:
+                Odds[pirate]=lookup[AO_key[pirate]]
+    except KeyError:
+        pass
+    
+    Odds['']=1; Payouts['']=1;
+    for n in range(len(Arenas)):
+        Arenas[n].append('')
+    output=[]
+    for a in Arenas[0]:
+        for b in Arenas[1]:
+            for c in Arenas[2]:
+                for d in Arenas[3]:
+                    for e in Arenas[4]:
+                        o=Odds[a]*Odds[b]*Odds[c]*Odds[d]*Odds[e]
+                        p=Payouts[a]*Payouts[b]*Payouts[c]*Payouts[d]*Payouts[e]
+                        output.append([a,b,c,d,e,p,o])
+    combos=pd.DataFrame(output)
+    combos.columns=["Shipwreck","Lagoon","Treasure Island","Hidden Cove","Harpoon Harry","Payout","Percent"]
+    limit=1000000/max_bet
+    combos.ix[combos.Payout > limit, 'Payout'] = limit
+    combos["Expected Ratio"]=combos["Percent"]*combos["Payout"]
+    #combos["NP"]=(combos["Percent"]-.0102)/.0405
+    #combos["NER"]=(combos["Expected Ratio"]-.3017)/.4235
+    #combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
+    combos.sort_values("Expected Ratio",ascending=False,inplace=True)
+    combos.index=range(1,len(combos)+1)
+    bets=combos.head(10)       
+    TER=bets["Expected Ratio"].sum()   
+    return bets, TER
+
+def test_AORO(risks,rounds,max_bet):
+    for risk in risks:
+        total_win=[]; bets=0; total_TER=[]
+        for rnd in rounds:
+            win_file=open("fcwin_data.pickle","rb")
+            wind = pickle.load(win_file)
+            win_file.close()
+            win_data=wind[rnd]
+            bet_today,TER=AORO_bets(rnd, max_bet, risk)
+            win=calc_winnings(bet_today,win_data)
+            total_win.append(win)
+            total_TER.append(TER)
+            bets+=10
+        print("%.2f %d %.2f TER: %.2f - AORO" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
