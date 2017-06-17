@@ -44,8 +44,8 @@ def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=14,
 
 ###############################################
 #####User Input - Modify for daily results#####
-rnd=6597
-url="https://www.reddit.com/r/neopets/comments/6dwsbu/food_club_bets_may_29_2017/"
+rnd=6615
+url="https://www.reddit.com/r/neopets/comments/6hiofn/food_club_bets_june_16_2017/"
 ###############################################
 #retrives round winners
 a,o,p,w=ft.get_past_data(rnd) #retrieve arenas, odds, payouts, winners from daqtools
