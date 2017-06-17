@@ -20,31 +20,32 @@ plt.style.use('ggplot')
 #        13:0.044,
 #        }
 
+#mathematical
 #AORO_odds={2:0.5226,
-#        3:0.2842,
-#        4:0.2288,
-#        5:0.1833,
-#        6:0.1583,
-#        7:0.1332,
-#        8:0.1191,
-#        9:0.1047,
-#        10:0.0989,
-#        11:0.087,
-#        12:0.08,
+#        3:0.3525,
+#        4:0.2575,
+#        5:0.20425,
+#        6:0.1685,
+#        7:0.143,
+#        8:0.12525,
+#        9:0.1117,
+#        10:0.10025,
+#        11:0.09075,
+#        12:0.08325,
 #        13:0.044,
 #        }
 
 AORO_odds={2:0.5226,
-        3:0.3525,
-        4:0.2575,
-        5:0.20425,
-        6:0.1685,
-        7:0.143,
-        8:0.12525,
-        9:0.1117,
-        10:0.10025,
-        11:0.09075,
-        12:0.08325,
+        3:0.2842,
+        4:0.2288,
+        5:0.1833,
+        6:0.1583,
+        7:0.1332,
+        8:0.1191,
+        9:0.1047,
+        10:0.0989,
+        11:0.087,
+        12:0.08,
         13:0.044,
         }
 
@@ -61,7 +62,7 @@ realodds={2:0.523,
         12:0.080,
         13:0.04,
         }
-#Downloads data from daqtools and writes to pickle
+#Downloads data from daqtools and writes to pickles
 def get_past_data(rnd):
     win_file=open("fcwin_data.pickle","rb")
     win_data = pickle.load(win_file)
@@ -87,10 +88,17 @@ def get_past_data(rnd):
     names=[1,11,20,29,40,50,59,68,79,89,98,107,118,128,137,146,157,167,176,185]
     opening_odds=[x+5 for x in names]
     current_odds=[x+6 for x in names]
+    food_adjust=[x+8 for x in names]
+    est_prob=[x+1 for x in names]
     
     Pirates=[test[x].text for x in names]
     Percent=[realodds[int(test[x].text[:-2])] for x in opening_odds]
     Payout=[int(test[x].text[:-2]) for x in current_odds]
+    FA=[int(test[x].text[-2:]) for x in food_adjust]
+    Favs=[int(test[x].text[:2]) for x in food_adjust]
+    Alg=[int(test[x].text[6:8]) for x in food_adjust]
+    EP=[float(test[x].text[:-2]) for x in est_prob]
+    OO=[int(test[x].text[:-2]) for x in opening_odds]
     
     Shipwreck=Pirates[0:4]
     Lagoon=Pirates[4:8]
@@ -100,10 +108,15 @@ def get_past_data(rnd):
     
     roundData=[Shipwreck,Lagoon,Treasure_Island,Hidden_Cove,Harpoon_Harry]
 
-    OddsData={}; PayoutData={}
+    OddsData={}; PayoutData={}; FoodAdjustData={}; FavoritesData={}; AllergiesData={}; EstProbData={}; RatioData={}; OpenOddsData={}
     for x in range(len(Pirates)):
         OddsData[Pirates[x]]=Percent[x]
         PayoutData[Pirates[x]]=Payout[x]
+        FoodAdjustData[Pirates[x]]=FA[x]
+        FavoritesData[Pirates[x]]=Favs[x]
+        AllergiesData[Pirates[x]]=Alg[x]
+        EstProbData[Pirates[x]]=EP[x]
+        OpenOddsData[Pirates[x]]=OO[x]
 
     for tavern in roundData:
         OddsSum=0
@@ -111,6 +124,7 @@ def get_past_data(rnd):
             OddsSum+=OddsData[pirate]
         for pirate in tavern:
             OddsData[pirate]=OddsData[pirate]/OddsSum
+            RatioData[pirate]=OddsSum
 
     Arena_file=open("ArenaData.pickle","rb")
     Arenas = pickle.load(Arena_file)
@@ -124,9 +138,39 @@ def get_past_data(rnd):
     Payouts = pickle.load(Payouts_file)
     Payouts_file.close()
     
+    Favorites_file=open("Favorites.pickle","rb")
+    Favorites = pickle.load(Favorites_file)
+    Favorites_file.close()
+    
+    FoodAdjust_file=open("FoodAdjustData.pickle","rb")
+    FoodAdjust = pickle.load(FoodAdjust_file)
+    FoodAdjust_file.close()
+    
+    Allergies_file=open("Allergies.pickle","rb")
+    Allergies = pickle.load(Allergies_file)
+    Allergies_file.close()
+
+    EstProb_file=open("EstProb.pickle","rb")
+    EstProb = pickle.load(EstProb_file)
+    EstProb_file.close()
+    
+    OpenOdds_file=open("OpenOddsData.pickle","rb")
+    OpenOdds = pickle.load(OpenOdds_file)
+    OpenOdds_file.close()
+    
+    Ratio_file=open("RatioData.pickle","rb")
+    Ratio = pickle.load(Ratio_file)
+    Ratio_file.close() 
+    
     Arenas[rnd]=roundData
     Payouts[rnd]=PayoutData
     Odds[rnd]=OddsData
+    FoodAdjust[rnd]=FoodAdjustData
+    Favorites[rnd]=FavoritesData
+    Allergies[rnd]=AllergiesData
+    EstProb[rnd]=EstProbData
+    Ratio[rnd]=RatioData
+    OpenOdds[rnd]=OpenOddsData
       
     Arena_file=open("ArenaData.pickle","wb")
     pickle.dump(Arenas, Arena_file)
@@ -140,7 +184,30 @@ def get_past_data(rnd):
     pickle.dump(Payouts, Payouts_file)
     Payouts_file.close()
     
-    return Arenas[rnd], Odds[rnd], Payouts[rnd], winners
+    FoodAdjust_file=open("FoodAdjustData.pickle","wb")
+    pickle.dump(FoodAdjust, FoodAdjust_file)
+    FoodAdjust_file.close()
+          
+    Favorites_file=open("Favorites.pickle","wb")
+    pickle.dump(Favorites, Favorites_file)
+    Favorites_file.close()
+    
+    Allergies_file=open("Allergies.pickle","wb")
+    pickle.dump(Allergies, Allergies_file)
+    Allergies_file.close()
+    
+    EstProb_file=open("EstProb.pickle","wb")
+    pickle.dump(EstProb, EstProb_file)
+    EstProb_file.close()
+    
+    OpenOdds_file=open("OpenOddsData.pickle","wb")
+    pickle.dump(OpenOdds, OpenOdds_file)
+    OpenOdds_file.close()   
+    
+    Ratio_file=open("RatioData.pickle","wb")
+    pickle.dump(Ratio, Ratio_file)
+    Ratio_file.close()  
+    return
 
 def load_past_data(rnd):
     Arena_file=open("ArenaData.pickle","rb")
@@ -161,6 +228,7 @@ def load_past_data(rnd):
 
     return Arenas[rnd], Odds[rnd], Payouts[rnd], win_data[rnd]
 
+#gets today's data - does not write to pickle
 def get_todays_data():
     res=requests.get("http://foodclub.daqtools.info/History.php")
     res.raise_for_status()
@@ -196,7 +264,8 @@ def get_todays_data():
             OddsData[pirate]=OddsData[pirate]/OddsSum
     
     return roundData, OddsData, PayoutData
-       
+
+#generates all 3125 combinations     
 def calc_combos(Arenas, Odds, Payouts):
     Odds['']=1; Payouts['']=1;
     for n in range(len(Arenas)):
@@ -214,6 +283,7 @@ def calc_combos(Arenas, Odds, Payouts):
     combo_df.columns=["Shipwreck","Lagoon","Treasure Island","Hidden Cove","Harpoon Harry","Payout","Percent"]
     return combo_df
 
+#generates bets based on Dwindleman method
 def calc_bets(combos, max_bet, risk):
     limit=1000000/max_bet
     combos.ix[combos.Payout > limit, 'Payout'] = limit
@@ -336,7 +406,8 @@ def calc_bust(localdf,bets,rnd,risk):
     </table><br><br>
     """ % (risk, bets.to_html(), TER, bust, partial, jackpot, localdf.to_html()))
     htmloutput.close()
-    
+
+#calculates winning ratio of round    
 def calc_winnings(bets,winners):    
     winnings=[]
     result=winners
@@ -347,6 +418,7 @@ def calc_winnings(bets,winners):
     pay=sum(winnings)
     return pay
 
+#simulates bets using Dwindleman method
 def test_model(risks,rounds,max_bet):
     for risk in risks:
         total_win=[]; bets=0; total_TER=[]
@@ -359,13 +431,15 @@ def test_model(risks,rounds,max_bet):
             total_TER.append(TER)
             bets+=10
         print("%.2f %d %.2f - TER: %.2f" % (risk,sum(total_win),sum(total_win)/bets, sum(total_TER)/len(rounds)))
-         
+
+#starts firefox browser for selenium scripts         
 def start():
     global browser
-    FirefoxProfile=r'C:\Users\Vincent\AppData\Roaming\Mozilla\Firefox\Profiles\yxempuro.default'
+    FirefoxProfile=r'C:\Users\Vincent\AppData\Roaming\Mozilla\Firefox\Profiles\swdbgbjk.profileToolsQA'
     profile = webdriver.FirefoxProfile(FirefoxProfile)
     browser = webdriver.Firefox(profile)
 
+#inputs calculated bets in daqtools
 def daqtools(bets,max_bet):
     bnames=bets.ix[1:10,0:5]
     browser.get("http://foodclub.daqtools.info/Bets_Dropdown.php")
@@ -381,7 +455,7 @@ def daqtools(bets,max_bet):
                 browser.find_element_by_xpath('//select[@name="%s"]/option[text()="%s"]' % (betindex, pirate)).click()
             else:
                 pass
-
+#calculates bets 
 def clf_bet(combos, max_bet, risk):
     clf_pickle=open("clf2_foodclub.pickle","rb")
     clf=pickle.load(clf_pickle)

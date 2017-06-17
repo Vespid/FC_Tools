@@ -5,7 +5,7 @@ import warnings
 warnings.filterwarnings('ignore')
 ##############TEST###########
 #Have data from 3574 to 6547
-data_file=open("Allergies.pickle","rb")
+data_file=open("fcwin_data.pickle","rb")
 FC_data = pickle.load(data_file)
 datarange=list(FC_data.keys())
 data_file.close()
@@ -13,12 +13,12 @@ data_file.close()
 risks=[1]
 max_bet=1000
 
-Random=False
-test_amount=1
+Random=True
+test_amount=10
 days=30
 
-r_start=6000
-r_end=6538
+r_start=3574
+r_end=6499
 
 start=[6265,6296,6327,6357,6388,6418,6449,6480,6508]
 end=[6295,6326,6356,6387,6417,6448,6479,6507,6538]
@@ -44,16 +44,17 @@ for x in range(len(start)):
         else:
             x=list(range(r_start,r_end+1))
             rounds=[y for y in x if y in datarange]
+            print("Start:",start,"End",end)
 #        print("Test: %d" %(tests+1))
         print(" ")
 #        ft.test_model(risks,rounds,max_bet)
 #        ft.test_dumb_model(risks,rounds,max_bet)
-#        ft.test_daq_model(risks,rounds,max_bet)
+        ft.test_daq_model(risks,rounds,max_bet)
 #        ft.test_vdaq_model(risks,rounds,max_bet)
 #        ft.test_clf_model(risks,rounds,max_bet)
-#        ft.test_ao_model(risks,rounds,max_bet)
+        ft.test_ao_model(risks,rounds,max_bet)
 #        ft.test_value_model(risks,rounds,max_bet)
-#        ft.test_AORO(risks,rounds,max_bet)
+        ft.test_AORO(risks,rounds,max_bet)
         ft.test_newodd(risks,rounds,max_bet)
 print("Done")
 
