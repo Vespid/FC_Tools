@@ -968,7 +968,7 @@ def AORO_bets(rnd, max_bet, risk):
     combos.index=range(1,len(combos)+1)
     bets=combos.head(10)       
     TER=bets["Expected Ratio"].sum()   
-    return bets, TER
+    return bets, TER, combos
 
 def test_AORO(risks,rounds,max_bet):
     for risk in risks:
@@ -978,7 +978,7 @@ def test_AORO(risks,rounds,max_bet):
             wind = pickle.load(win_file)
             win_file.close()
             win_data=wind[rnd]
-            bet_today,TER=AORO_bets(rnd, max_bet, risk)
+            bet_today,TER, combodf=AORO_bets(rnd, max_bet, risk)
             win=calc_winnings(bet_today,win_data)
             total_win.append(win)
             total_TER.append(TER)
@@ -1052,3 +1052,64 @@ def test_newodd(risks,rounds,max_bet):
             total_TER.append(TER)
             bets+=10
         print("%.2f %d %.2f TER: %.2f - NewOdd" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
+        
+def AORO_std_bets(rnd,max_bet,risk):
+    min_pct=.05
+    min_er=-.0125
+    
+    min_pct=.01    #minimum % increase
+    min_er=-.125   #minimum drop in TER
+    
+    bets,TER, combodf=AORO_bets(rnd, max_bet, risk)
+    pbets=combodf[combodf["Expected Ratio"]>(bets.loc[10]["Expected Ratio"]+min_er)]
+    pbets=pbets[pbets["Expected Ratio"]<(bets.loc[10]["Expected Ratio"])]
+    if len(pbets)==0:
+        return bets, TER, bets, TER
+    
+    ogbets=bets.copy()
+    ogter=TER
+    pbets.sort(columns="Expected Ratio", inplace=True, ascending=False)
+    bets = bets.reset_index(drop=True)
+    pbets = pbets.reset_index(drop=True)
+    
+    for bet_index in range(len(bets)):
+        for replacement_index in range(len(pbets)):
+            bet_data=bets.loc[bet_index].copy()
+            r_data=pbets.loc[replacement_index].copy()
+            bet_er=bets.loc[bet_index]["Expected Ratio"]
+            bet_p=bets.loc[bet_index]["Percent"]
+            r_er=pbets.loc[replacement_index]["Expected Ratio"]
+            r_p=pbets.loc[replacement_index]["Percent"]
+            if r_er-bet_er>min_er and r_p-bet_p>min_pct:
+                bets.drop(bets.index[bet_index],inplace=True)
+                pbets.drop(pbets.index[replacement_index],inplace=True)
+                pbets=pbets.append(bet_data)
+                bets=bets.append(r_data)
+                pbets.sort(columns="Expected Ratio", inplace=True, ascending=False)
+                pbets = pbets.reset_index(drop=True)
+                bets = bets.reset_index(drop=True)
+                continue
+    TER=bets["Expected Ratio"].sum()        
+    return bets, TER, ogbets, ogter
+
+def test_AORO_std(risks,rounds,max_bet):
+    for risk in risks:
+        total_win=[]; bets=0; total_TER=[]; total_ogwin=[]; total_ogTER=[];
+        for rnd in rounds:
+            win_file=open("fcwin_data.pickle","rb")
+            wind = pickle.load(win_file)
+            win_file.close()
+            win_data=wind[rnd]
+            bet_today,TER, ogbets, ogter=AORO_std_bets(rnd, max_bet, risk)
+            
+            win=calc_winnings(bet_today,win_data)
+            total_win.append(win)
+            total_TER.append(TER)
+            
+            ogwin=calc_winnings(ogbets,win_data)
+            total_ogwin.append(ogwin)
+            total_ogTER.append(ogter)
+            
+            bets+=len(bet_today)
+        print("%.2f %d %.2f TER: %.2f - AORO" % (risk,sum(total_ogwin),sum(total_ogwin)/bets,sum(total_ogTER)/len(rounds)))
+        print("%.2f %d %.2f TER: %.2f - AORO-std" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
