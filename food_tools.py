@@ -466,7 +466,7 @@ def clf_bet(combos, max_bet, risk):
     model_input=np.array(combos[["Percent","Expected Ratio"]])
 #    model_input=preprocessing.scale(model_input)
     combos["CLF"]=clf.predict(model_input)
-    combos.sort("CLF",ascending=False,inplace=True)
+    combos.sort_values("CLF",ascending=False,inplace=True)
     combos.index=range(1,len(combos)+1)
     return combos.head(10)
 
@@ -1058,8 +1058,8 @@ def AORO_std_bets(rnd,max_bet,risk):
     min_pct=.01    #minimum % increase
     min_er=-.125   #minimum drop in TER
     
-#    min_pct=.01    #minimum % increase
-#    min_er=-.25   #minimum drop in TER
+    min_pct=.01    #minimum % increase
+    min_er=-.25   #minimum drop in TER
     
     bets,TER, combodf=AORO_bets(rnd, max_bet, risk)
     pbets=combodf[combodf["Expected Ratio"]>(bets.loc[10]["Expected Ratio"]+min_er)]
@@ -1069,7 +1069,7 @@ def AORO_std_bets(rnd,max_bet,risk):
     
     ogbets=bets.copy()
     ogter=TER
-    pbets.sort(columns="Expected Ratio", inplace=True, ascending=False)
+    pbets.sort_values("Expected Ratio", inplace=True, ascending=False)
     bets = bets.reset_index(drop=True)
     pbets = pbets.reset_index(drop=True)
     
@@ -1086,7 +1086,7 @@ def AORO_std_bets(rnd,max_bet,risk):
                 pbets.drop(pbets.index[replacement_index],inplace=True)
                 pbets=pbets.append(bet_data)
                 bets=bets.append(r_data)
-                pbets.sort(columns="Expected Ratio", inplace=True, ascending=False)
+                pbets.sort_values("Expected Ratio", inplace=True, ascending=False)
                 pbets = pbets.reset_index(drop=True)
                 bets = bets.reset_index(drop=True)
                 continue
@@ -1128,7 +1128,7 @@ def daq_std_bets(rnd,max_bet,risk):
     
     ogbets=bets.copy()
     ogter=TER
-    pbets.sort(columns="Expected Ratio", inplace=True, ascending=False)
+    pbets.sort_values("Expected Ratio", inplace=True, ascending=False)
     bets = bets.reset_index(drop=True)
     pbets = pbets.reset_index(drop=True)
     
@@ -1145,7 +1145,7 @@ def daq_std_bets(rnd,max_bet,risk):
                 pbets.drop(pbets.index[replacement_index],inplace=True)
                 pbets=pbets.append(bet_data)
                 bets=bets.append(r_data)
-                pbets.sort(columns="Expected Ratio", inplace=True, ascending=False)
+                pbets.sort_values("Expected Ratio", inplace=True, ascending=False)
                 pbets = pbets.reset_index(drop=True)
                 bets = bets.reset_index(drop=True)
                 continue
