@@ -1054,11 +1054,12 @@ def test_newodd(risks,rounds,max_bet):
         print("%.2f %d %.2f TER: %.2f - NewOdd" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
         
 def AORO_std_bets(rnd,max_bet,risk):
-    min_pct=.05
-    min_er=-.0125
-    
+
     min_pct=.01    #minimum % increase
     min_er=-.125   #minimum drop in TER
+    
+#    min_pct=.01    #minimum % increase
+#    min_er=-.25   #minimum drop in TER
     
     bets,TER, combodf=AORO_bets(rnd, max_bet, risk)
     pbets=combodf[combodf["Expected Ratio"]>(bets.loc[10]["Expected Ratio"]+min_er)]
@@ -1115,8 +1116,6 @@ def test_AORO_std(risks,rounds,max_bet):
         print("%.2f %d %.2f TER: %.2f - AORO-std" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
         
 def daq_std_bets(rnd,max_bet,risk):
-    min_pct=.05
-    min_er=-.0125
     
     min_pct=.01    #minimum % increase
     min_er=-.125   #minimum drop in TER
