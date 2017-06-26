@@ -10,7 +10,7 @@ To Do:
     1. Reduce pickles to 1 pickle
     2. 1 function for all simulations - take bet and calc winnings
     3. Pickle bets?
-
+    4. Calc winnings based on payout data not column
 
 '''
 realodds={2:0.5226,
@@ -499,7 +499,8 @@ def max_TER_bets(combos, max_bet, risk):
 #    combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
     combos.sort_values("Expected Ratio",ascending=False,inplace=True)
     combos.index=range(1,len(combos)+1)
-    bets=combos.head(10)       
+    bets=combos.head(10)
+    bets=bets[bets["Expected Ratio"]>1]
     TER=bets["Expected Ratio"].sum()   
     return bets,TER
 
@@ -537,42 +538,34 @@ def std_decrease(bets,TER,combodf):
     TER=bets["Expected Ratio"].sum()        
     return bets, TER
 
-def test_daq_model(risks,rounds,max_bet):
-    for risk in risks:
-        total_win=[]; bets=0; total_TER=[]
-        for rnd in rounds:
-            win_file=open("fcwin_data.pickle","rb")
-            wind = pickle.load(win_file)
-            win_file.close()
-            win_data=wind[rnd]
-            a,o,p,oo,r,fa,w,f,alg,est=load_all_data(rnd)
-            combodf=calc_combos(a, oo, p)
-            bet_today,TER=max_TER_bets(combodf, max_bet, risk)
-            win=calc_winnings(bet_today,win_data)
-            total_win.append(win)
-            total_TER.append(TER)
-            bets+=10
-        print("%.2f %d %.2f TER: %.2f - DAQ" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
-
-
+def test_daq_model(risk,rounds,max_bet):
+    total_win=[]; bets=0; total_TER=[]
+    for rnd in rounds:
+        a,o,p,oo,r,fa,win_data,f,alg,est=load_all_data(rnd)
+        for key, value in est.items():
+            est[key]=value/100
+        combodf=calc_combos(a, est, p)
+        bet_today,TER=max_TER_bets(combodf, max_bet, risk)
+        win=calc_winnings(bet_today,win_data)
+        total_win.append(win)
+        total_TER.append(TER)
+        bets+=len(bet_today)
+    print("%.2f %d %.2f TER: %.2f - DAQ" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
+    return sum(total_win)/bets
 
 #need to optimize
-def test_AORO(risks,rounds,max_bet):
-    for risk in risks:
-        total_win=[]; bets=0; total_TER=[]
-        for rnd in rounds:
-            win_file=open("fcwin_data.pickle","rb")
-            wind = pickle.load(win_file)
-            win_file.close()
-            win_data=wind[rnd]
-            a,o,p,oo,r,fa,w,f,alg,est=load_all_data(rnd)
-            combodf=AORO_combos(a, oo, p)
-            bet_today,TER=max_TER_bets(combodf, max_bet, risk)
-            win=calc_winnings(bet_today,win_data)
-            total_win.append(win)
-            total_TER.append(TER)
-            bets+=10
-        print("%.2f %d %.2f TER: %.2f - AORO" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
+def test_AORO(risk,rounds,max_bet):
+    total_win=[]; bets=0; total_TER=[]
+    for rnd in rounds:
+        a,o,p,oo,r,fa,win_data,f,alg,est=load_all_data(rnd)
+        combodf=AORO_combos(a, oo, p)
+        bet_today,TER=max_TER_bets(combodf, max_bet, risk)
+        win=calc_winnings(bet_today,win_data)
+        total_win.append(win)
+        total_TER.append(TER)
+        bets+=len(bet_today)
+    print("%.2f %d %.2f TER: %.2f - AORO" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
+    return sum(total_win)/bets
         
 nicknames={
     "Federismo Corvallio": 'Federismo',
