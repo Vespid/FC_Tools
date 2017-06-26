@@ -12,7 +12,7 @@ max_bet=1000
 
 
 #####Calculate Today's Round#####
-a,o,p=ft.get_todays_data()
+a,o,p,oo=ft.get_todays_data()
 combodf=ft.calc_combos(a,o,p)
 bets,TER=ft.calc_bets(combodf, max_bet, risk)
 ft.reddit_format(rnd,bets)
@@ -42,11 +42,11 @@ ft.reddit_format(rnd,bets)
 #a,o,p,w=ft.calc_odds(rnd)
 #combodf=ft.calc_combos(a,o,p)
 #bets=ft.calc_bets(combodf, max_bet, risk)
-
-redditbet_file=open("MyRedditBets.pickle","rb")
-reddit_bets = pickle.load(redditbet_file)
-redditbet_file.close()
-reddit_bets[rnd]=bets
-redditbet_file=open("MyRedditBets.pickle","wb")
-pickle.dump(reddit_bets, redditbet_file)
-redditbet_file.close()
+#
+#redditbet_file=open("MyRedditBets.pickle","rb")
+#reddit_bets = pickle.load(redditbet_file)
+#redditbet_file.close()
+#reddit_bets[rnd]=bets
+#redditbet_file=open("MyRedditBets.pickle","wb")
+#pickle.dump(reddit_bets, redditbet_file)
+#redditbet_file.close()
