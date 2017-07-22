@@ -503,8 +503,9 @@ def AORO_combos(Arenas, OpenOdds, Payouts):
 
 def max_TER_bets(combos, max_bet, risk):
     limit=1000000/max_bet
-    combos.ix[combos.Payout > limit, 'Payout'] = limit
-    combos["Expected Ratio"]=combos["Percent"]*combos["Payout"]
+    combos["AdjPayout"]=combos["Payout"].copy()
+    combos.ix[combos.AdjPayout > limit, 'AdjPayout'] = limit
+    combos["Expected Ratio"]=combos["Percent"]*combos["AdjPayout"]
 #    combos["NP"]=(combos["Percent"]-.0102)/.0405
 #    combos["NER"]=(combos["Expected Ratio"]-.3017)/.4235
 #    combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
