@@ -56,8 +56,10 @@ def get_past_data(rnd):
     current_odds=[x+6 for x in names]
     food_adjust=[x+8 for x in names]
     est_prob=[x+1 for x in names]
+    foodTable=[10,49,88,127,166]
     
     Pirates=[test[x].text for x in names]
+    FoodCourseData=[test[x].text for x in foodTable]
     Percent=[realodds[int(test[x].text[:-2])] for x in opening_odds]
     Payout=[int(test[x].text[:-2]) for x in current_odds]
     FA=[int(test[x].text[-2:]) for x in food_adjust]
@@ -128,6 +130,10 @@ def get_past_data(rnd):
     Ratio = pickle.load(Ratio_file)
     Ratio_file.close() 
     
+    Food_file=open("FoodCourses.pickle","rb")
+    FoodCourse = pickle.load(Food_file)
+    Food_file.close() 
+    
     Arenas[rnd]=roundData
     Payouts[rnd]=PayoutData
     Odds[rnd]=OddsData
@@ -137,6 +143,7 @@ def get_past_data(rnd):
     EstProb[rnd]=EstProbData
     Ratio[rnd]=RatioData
     OpenOdds[rnd]=OpenOddsData
+    FoodCourse[rnd]=FoodCourseData
       
     Arena_file=open("ArenaData.pickle","wb")
     pickle.dump(Arenas, Arena_file)
@@ -173,6 +180,10 @@ def get_past_data(rnd):
     Ratio_file=open("RatioData.pickle","wb")
     pickle.dump(Ratio, Ratio_file)
     Ratio_file.close()  
+    
+    Food_file=open("FoodCourses.pickle","wb")
+    pickle.dump(FoodCourse, Food_file)
+    Food_file.close()
     return
 
 def load_all_data(rnd):
@@ -488,12 +499,13 @@ def AORO_combos(Arenas, OpenOdds, Payouts):
     except KeyError:
         pass
     
-    return calc_combos(Arenas, Odds, Payouts)
+    return calc_combos(Arenas, Odds, Payouts), Odds
 
 def max_TER_bets(combos, max_bet, risk):
     limit=1000000/max_bet
-    combos.ix[combos.Payout > limit, 'Payout'] = limit
-    combos["Expected Ratio"]=combos["Percent"]*combos["Payout"]
+    combos["AdjPayout"]=combos["Payout"].copy()
+    combos.ix[combos.AdjPayout > limit, 'AdjPayout'] = limit
+    combos["Expected Ratio"]=combos["Percent"]*combos["AdjPayout"]
 #    combos["NP"]=(combos["Percent"]-.0102)/.0405
 #    combos["NER"]=(combos["Expected Ratio"]-.3017)/.4235
 #    combos["Raw"]=((1-risk)*combos.NP+risk*combos.NER)
@@ -547,6 +559,17 @@ def test_daq_model(risk,rounds,max_bet):
         combodf=calc_combos(a, est, p)
         bet_today,TER=max_TER_bets(combodf, max_bet, risk)
         win=calc_winnings(bet_today,win_data)
+        
+        with open("daq_bet_data.pickle",'rb') as rfp:
+            bet_win = pickle.load(rfp)
+        key=str(rnd)+"-"+str(max_bet)
+        try:
+            bet_win[key]=win/len(bet_today)
+        except ZeroDivisionError:
+            bet_win[key]=None
+        with open("daq_bet_data.pickle",'wb') as wfp:
+            pickle.dump(bet_win, wfp)  
+        
         total_win.append(win)
         total_TER.append(TER)
         bets+=len(bet_today)
@@ -558,9 +581,20 @@ def test_AORO(risk,rounds,max_bet):
     total_win=[]; bets=0; total_TER=[]
     for rnd in rounds:
         a,o,p,oo,r,fa,win_data,f,alg,est=load_all_data(rnd)
-        combodf=AORO_combos(a, oo, p)
+        combodf=AORO_combos(a, oo, p)[0]
         bet_today,TER=max_TER_bets(combodf, max_bet, risk)
         win=calc_winnings(bet_today,win_data)
+        
+        with open("AORO_bet_data.pickle",'rb') as rfp:
+            bet_win = pickle.load(rfp)
+        key=str(rnd)+"-"+str(max_bet)
+        try:
+            bet_win[key]=win/len(bet_today)
+        except ZeroDivisionError:
+            bet_win[key]=None      
+        with open("AORO_bet_data.pickle",'wb') as wfp:
+            pickle.dump(bet_win, wfp)   
+
         total_win.append(win)
         total_TER.append(TER)
         bets+=len(bet_today)
