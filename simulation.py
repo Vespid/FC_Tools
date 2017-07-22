@@ -1,38 +1,43 @@
 import food_tools as ft
+import numpy as np
 import pickle
 import random
 import warnings
 warnings.filterwarnings('ignore')
 ##############TEST###########
-#Have data from 3574 to 6547
-data_file=open("Allergies.pickle","rb")
-FC_data = pickle.load(data_file)
-datarange=list(FC_data.keys())
+#Have data from 3574 to 6623
+data_file=open("fcwin_data.pickle","rb")
+win_data = pickle.load(data_file)
+datarange=list(win_data.keys())
 data_file.close()
 #--------------USER INPUTS--------------
-risks=[1]
-max_bet=8000
+risks=1
+max_bet=10100
 
 Random=True
-test_amount=5
-days=730
+test_amount=10
+days=8
 
 
-#start=[6265,6296,6327,6357,6388,6418,6449,6480,6508]
-#end=[6295,6326,6356,6387,6417,6448,6479,6507,6538]
-#
+start=[6265,6296,6327,6357,6388,6418,6449,6480,6508,6539,6569]
+end=[6295,6326,6356,6387,6417,6448,6479,6507,6538,6568,6599]
+
 #start=[3574,4001,4251,4501,4751,5001,5251,5501,5751,6001,6251]
 #end=[4000,4250,4500,4750,5000,5250,5500,5750,6000,6250,6538]
 
-start=[6535]
-end=[6538]
+#start=[5501,5751,6001,6251]
+#end=[5750,6000,6250,6538]
+#
+#start=[6500]
+#end=[6501]
+
+DAQ_TER=[]; AORO_TER=[]
 
 print("Max Bet:",max_bet)
 for x in range(len(start)):
     r_start=start[x]
     r_end=end[x]
-##6265-6538
-#---------------------------------------
+
     if Random==False:
         test_amount=1
         
@@ -46,18 +51,8 @@ for x in range(len(start)):
             print("\nStart:",r_start,"End:",r_end)
 #        print("Test: %d" %(tests+1))
         print(" ")
-#        ft.test_model(risks,rounds,max_bet)
-#        ft.test_dumb_model(risks,rounds,max_bet)
-#        ft.test_daq_model(risks,rounds,max_bet)
-#        ft.test_vdaq_model(risks,rounds,max_bet)
-#        ft.test_clf_model(risks,rounds,max_bet)
-#        ft.test_ao_model(risks,rounds,max_bet)
-#        ft.test_value_model(risks,rounds,max_bet)
-#        ft.test_AORO(risks,rounds,max_bet)
-#        ft.test_newodd(risks,rounds,max_bet)
-#        ft.test_newodd2(risks,rounds,max_bet)
-#        ft.test_AORO_std(risks,rounds,max_bet)
-#        ft.test_daq_std(risks,rounds,max_bet)
-print("Done")
-
-#ft.get_past_data(6617)
+#        DAQ_TER.append(ft.test_daq_model(risks,rounds,max_bet))     #daqtools
+        AORO_TER.append(ft.test_AORO(risks,rounds,max_bet))         #AORO method
+print("Done\n")
+#print("DAQ:",np.mean(DAQ_TER), np.std(DAQ_TER))
+print("AORO:",np.mean(AORO_TER), np.std(AORO_TER))
