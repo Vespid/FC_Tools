@@ -12,11 +12,11 @@ datarange=list(win_data.keys())
 data_file.close()
 #--------------USER INPUTS--------------
 risks=1
-max_bet=10100
+max_bet=7500
 
 Random=True
-test_amount=10
-days=8
+test_amount=15
+days=30
 
 
 start=[6265,6296,6327,6357,6388,6418,6449,6480,6508,6539,6569]
@@ -28,8 +28,8 @@ end=[6295,6326,6356,6387,6417,6448,6479,6507,6538,6568,6599]
 #start=[5501,5751,6001,6251]
 #end=[5750,6000,6250,6538]
 #
-#start=[6500]
-#end=[6501]
+start=[6500]
+end=[6501]
 
 DAQ_TER=[]; AORO_TER=[]
 

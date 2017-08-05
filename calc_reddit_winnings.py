@@ -76,11 +76,12 @@ def calc_winnings(bets,winners):
     pay=sum(winnings)
     return pay
 
-#for rnd in range(6627,6645):
+#for rnd in range(6657,6658):
 #    ft.get_past_data(rnd)
 
 
 url="https://www.reddit.com/user/Dwindleman/"
+url="https://www.reddit.com/user/Dwindleman/?count=25&after=t1_djyjgfh"
 
 
 headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
