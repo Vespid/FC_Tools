@@ -1,4 +1,4 @@
-import pickle, bs4, requests, time
+import pickle, bs4, requests, time, json
 import pandas as pd
 import numpy as np
 from selenium import webdriver
@@ -409,6 +409,7 @@ def calc_bust(localdf,bets,rnd,risk):
 def start():
     global browser
     FirefoxProfile=r'C:\Users\Vincent\AppData\Roaming\Mozilla\Firefox\Profiles\swdbgbjk.profileToolsQA'
+    FirefoxProfile=r'C:\Users\Vincent\AppData\Local\Mozilla\Firefox\Profiles\4e6hmsef.default'
     profile = webdriver.FirefoxProfile(FirefoxProfile)
     browser = webdriver.Firefox(profile)
 
@@ -636,3 +637,57 @@ def reddit_format(rnd,bets):
     for x in olist:
         print(count,*x, sep='|')
         count+=1
+        
+pirateList=["","Scurvy Dan the Blade",
+    "Young Sproggie",
+    "Orvinn the First Mate",
+    "Lucky McKyriggan",
+    "Sir Edmund Ogletree",
+    "Peg Leg Percival",
+    "Bonnie Pip Culliford",
+    "Puffo the Waister",
+    "Stuff-A-Roo",
+    "Squire Venable",
+    "Captain Crossblades",
+    "Ol' Stripey",
+    "Ned the Skipper",
+    "Fairfax the Deckhand",
+    "Gooblah the Grarrl",
+    "Franchisco Corvallio",
+    "Federismo Corvallio",
+    "Admiral Blackbeard",
+    "Buck Cutlass",
+    "The Tailhook Kid"]       
+ 
+def get_au():
+    res=requests.get("http://neofoodclub.fr/install.js")
+    res.raise_for_status()
+    jdata=json.loads(res.text[8:-1])
+    ArenasRaw=jdata["pirates"]
+    OOExtract=jdata["openingOdds"]
+    PayoutExtract=jdata["currentOdds"]
+    pirates=[]
+    for x in ArenasRaw:
+        for y in x:
+            pirates.append(pirateList[y])
+    OpenOdds={}; Payouts={}; count=-1
+    for x in range(5):
+        for y in range(1,5):
+            count+=1
+            OpenOdds[pirates[count]]=OOExtract[x][y]
+            Payouts[pirates[count]]=PayoutExtract[x][y]
+    Arenas=[pirates[0:4],pirates[4:8],pirates[8:12],pirates[12:16],pirates[16:20]]
+    arenaUrl={}; arenaUrl[""]=0
+    for x in range(5):
+        for y in range(4):
+            arenaUrl[Arenas[x][y]]=y+1
+    return Arenas, OpenOdds, Payouts, arenaUrl
+
+def au_url(bets, arenaUrl, rnd):
+    urlMatrix=np.array(bets.ix[0:10,0:5].replace(arenaUrl))
+    betList=[]
+    for x in range(len(urlMatrix)):
+        betList.append(np.array2string(urlMatrix[x], separator=", "))
+    print("""
+http://neofoodclub.fr/#bets={"1": %s, "2": %s, "3": %s, "4": %s, "5": %s, "6": %s, "7": %s, "8": %s, "9": %s, "10": %s}&round=%s
+""" % (betList[0], betList[1], betList[2], betList[3], betList[4], betList[5], betList[6], betList[7], betList[8], betList[9], rnd))
