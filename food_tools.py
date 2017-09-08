@@ -502,6 +502,40 @@ def AORO_combos(Arenas, OpenOdds, Payouts):
     
     return calc_combos(Arenas, Odds, Payouts), Odds
 
+def INDP_combos(Arenas, OpenOdds, Payouts):
+    lookup_file=open("IndPirateOdds.pickle","rb")
+    indvDict = pickle.load(lookup_file)
+    lookup_file.close()
+    Odds={}
+    for x in Arenas:
+        for pirate in x:
+            if OpenOdds[pirate] == 2:
+                Odds[pirate]=.5226
+            else:
+                Odds[pirate]=indvDict[OpenOdds[pirate]][pirate]
+    detail=[]; prates=[]
+    for y in range(len(Arenas)):
+        open_odds=[]; summation=0
+        for x in Arenas[y]:
+            open_odds.append(Odds[x])
+        pp=Arenas[y]
+        zipfile=[A for B, A in sorted(zip(open_odds,pp))]
+        open_odds.sort()
+        for x in range(len(open_odds)):
+            prates.append(zipfile[x])
+            if open_odds[x]!=.5226:
+                summation+=open_odds[x]
+        if open_odds[2]==.5226:
+            open_odds[2]=(1-summation)/2
+            open_odds[3]=open_odds[2]
+        if open_odds[3]==.5226:
+            open_odds[3]=1-summation     
+        for x in range(len(open_odds)):
+            detail.append(open_odds[x])
+    for x in range(len(prates)):
+        Odds[prates[x]]=detail[x]
+    return calc_combos(Arenas, Odds, Payouts), Odds
+
 def max_TER_bets(combos, max_bet, risk):
     limit=1000000/max_bet
     combos["AdjPayout"]=combos["Payout"].copy()
@@ -601,6 +635,20 @@ def test_AORO(risk,rounds,max_bet):
         bets+=len(bet_today)
     print("%.2f %d %.2f TER: %.2f - AORO" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
     return sum(total_win)/bets
+
+def test_INDP(risk,rounds,max_bet):
+    total_win=[]; bets=0; total_TER=[]
+    for rnd in rounds:
+        a,o,p,oo,r,fa,win_data,f,alg,est=load_all_data(rnd)
+        combodf=INDP_combos(a, oo, p)[0]
+        bet_today,TER=max_TER_bets(combodf, max_bet, risk)
+        win=calc_winnings(bet_today,win_data)
+        total_win.append(win)
+        total_TER.append(TER)
+        bets+=len(bet_today)
+    print("%.2f %d %.2f TER: %.2f - INDP" % (risk,sum(total_win),sum(total_win)/bets,sum(total_TER)/len(rounds)))
+    return sum(total_win)/bets
+
         
 nicknames={
     "Federismo Corvallio": 'Federismo',

@@ -28,10 +28,10 @@ end=[6295,6326,6356,6387,6417,6448,6479,6507,6538,6568,6599]
 #start=[5501,5751,6001,6251]
 #end=[5750,6000,6250,6538]
 #
-start=[6500]
-end=[6501]
+start=[6640]
+end=[6657]
 
-DAQ_TER=[]; AORO_TER=[]
+DAQ_TER=[]; AORO_TER=[]; INDP_TER=[]
 
 print("Max Bet:",max_bet)
 for x in range(len(start)):
@@ -52,7 +52,9 @@ for x in range(len(start)):
 #        print("Test: %d" %(tests+1))
         print(" ")
 #        DAQ_TER.append(ft.test_daq_model(risks,rounds,max_bet))     #daqtools
-        AORO_TER.append(ft.test_AORO(risks,rounds,max_bet))         #AORO method
+#        AORO_TER.append(ft.test_AORO(risks,rounds,max_bet))         #AORO method
+        INDP_TER.append(ft.test_INDP(risks,rounds,max_bet)) 
 print("Done\n")
 #print("DAQ:",np.mean(DAQ_TER), np.std(DAQ_TER))
-print("AORO:",np.mean(AORO_TER), np.std(AORO_TER))
+#print("AORO:",np.mean(AORO_TER), np.std(AORO_TER))
+print("INDP:",np.mean(INDP_TER), np.std(INDP_TER))
