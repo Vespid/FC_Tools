@@ -10,7 +10,8 @@ max_bet=10200
 
 #Arenas,est_prob,Payouts,OpenOdds=ft.get_todays_data()
 Arenas, OpenOdds, Payouts, arenaUrl=ft.get_au()
-combos, Odds = ft.AORO_combos(Arenas, OpenOdds, Payouts)
+#combos, Odds = ft.AORO_combos(Arenas, OpenOdds, Payouts)
+combos, Odds = ft.t13_combos(Arenas, OpenOdds, Payouts)
 bets, TER=ft.max_TER_bets(combos, max_bet, risk)
 
 print("TER: ",TER)
