@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from selenium import webdriver
 import matplotlib.pyplot as plt
+import pyperclip
 plt.style.use('ggplot')
 
 '''
@@ -647,15 +648,15 @@ def test_daq_model(risk,rounds,max_bet):
         bet_today,TER=max_TER_bets(combodf, max_bet, risk)
         win=calc_winnings(bet_today,win_data)
         
-        with open("daq_bet_data.pickle",'rb') as rfp:
-            bet_win = pickle.load(rfp)
-        key=str(rnd)+"-"+str(max_bet)
-        try:
-            bet_win[key]=win/len(bet_today)
-        except ZeroDivisionError:
-            bet_win[key]=None
-        with open("daq_bet_data.pickle",'wb') as wfp:
-            pickle.dump(bet_win, wfp)  
+#        with open("daq_bet_data.pickle",'rb') as rfp:
+#            bet_win = pickle.load(rfp)
+#        key=str(rnd)+"-"+str(max_bet)
+#        try:
+#            bet_win[key]=win/len(bet_today)
+#        except ZeroDivisionError:
+#            bet_win[key]=None
+#        with open("daq_bet_data.pickle",'wb') as wfp:
+#            pickle.dump(bet_win, wfp)  
         
         total_win.append(win)
         total_TER.append(TER)
@@ -672,15 +673,15 @@ def test_AORO(risk,rounds,max_bet):
         bet_today,TER=max_TER_bets(combodf, max_bet, risk)
         win=calc_winnings(bet_today,win_data)
         
-        with open("AORO_bet_data.pickle",'rb') as rfp:
-            bet_win = pickle.load(rfp)
-        key=str(rnd)+"-"+str(max_bet)
-        try:
-            bet_win[key]=win/len(bet_today)
-        except ZeroDivisionError:
-            bet_win[key]=None      
-        with open("AORO_bet_data.pickle",'wb') as wfp:
-            pickle.dump(bet_win, wfp)   
+#        with open("AORO_bet_data.pickle",'rb') as rfp:
+#            bet_win = pickle.load(rfp)
+#        key=str(rnd)+"-"+str(max_bet)
+#        try:
+#            bet_win[key]=win/len(bet_today)
+#        except ZeroDivisionError:
+#            bet_win[key]=None      
+#        with open("AORO_bet_data.pickle",'wb') as wfp:
+#            pickle.dump(bet_win, wfp)   
 
         total_win.append(win)
         total_TER.append(TER)
@@ -800,6 +801,7 @@ def au_url(bets, arenaUrl, rnd):
     betList=[]
     for x in range(len(urlMatrix)):
         betList.append(np.array2string(urlMatrix[x], separator=", "))
-    print("""
-http://neofoodclub.fr/#bets={"1": %s, "2": %s, "3": %s, "4": %s, "5": %s, "6": %s, "7": %s, "8": %s, "9": %s, "10": %s}&round=%s
-""" % (betList[0], betList[1], betList[2], betList[3], betList[4], betList[5], betList[6], betList[7], betList[8], betList[9], rnd))
+    betLink="""http://neofoodclub.fr/#bets={"1": %s, "2": %s, "3": %s, "4": %s, "5": %s, "6": %s, "7": %s, "8": %s, "9": %s, "10": %s}&round=%s""" % (betList[0], betList[1], betList[2], betList[3], betList[4], betList[5], betList[6], betList[7], betList[8], betList[9], rnd)
+    print(betLink)
+    pyperclip.copy(betLink)
+    
